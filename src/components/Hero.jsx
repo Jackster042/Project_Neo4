@@ -2,6 +2,8 @@ import React, { useRef, useState } from "react";
 
 import Button from "./Button";
 
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { TiLocationArrow } from "react-icons/ti";
 
 const Hero = () => {
@@ -29,6 +31,53 @@ const Hero = () => {
     // setCurrentIndex((prevIndex) => prevIndex + 1);
     setCurrentIndex(upcomingVideoIndex);
   };
+
+  //   ANIMATION
+  useGSAP(
+    () => {
+      if (hasClicked) {
+        gsap.set("#next-video", { visibility: "visible" });
+
+        gsap.to("#next-video", {
+          transformOrigin: "center center",
+          scale: 1,
+          width: "100%",
+          height: "100%",
+          duration: 1,
+          ease: "power1.inOut",
+          onStart: () => nextVideoRef.current.play(),
+        });
+
+        gsap.from("#current-video", {
+          transformOrigin: "center center",
+          duration: 1.5,
+          scale: 0,
+          ease: "power1.inOut",
+        });
+      }
+    },
+    { dependencies: [currentIndex], revertOnUpdate: true }
+  );
+
+  //   CLIP-PATH
+  useGSAP(() => {
+    gsap.set("#video-frame", {
+      clipPath: `polygon(14% 0%, 100% 0%, 100% 100%, 0% 100%)`,
+      borderRadius: `0 0 40% 10%`,
+    });
+
+    gsap.from("video-frame", {
+      clipPath: `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`,
+      borderRadius: "0 0 0 0",
+      ease: "power1.inOut",
+      scrollTrigger: {
+        trigger: "#video-frame",
+        start: "center center",
+        end: " bottom center",
+        scrub: true,
+      },
+    });
+  });
 
   const getVideoSrc = (index) => `/videos/hero-${index}.mp4`;
 
