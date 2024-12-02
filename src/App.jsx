@@ -6,7 +6,7 @@ import Navbar from "./components/NAvbar";
 
 const App = () => {
   return (
-    <main className="relative min-h-screen w-screen overflow-hidden bg-zinc-600">
+    <main className="relative min-h-screen w-screen overflow-hidden">
       <Navbar />
       <Hero />
       <About />

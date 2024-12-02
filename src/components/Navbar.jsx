@@ -1,11 +1,66 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { TiLocationArrow } from "react-icons/ti";
+import { useWindowScroll } from "react-use";
+
+import gsap from "gsap";
 
 import Button from "./Button";
 
+const navItems = ["Nexus", "Vault", "Prologue", "About", "Contact"];
+
 const Navbar = () => {
+  // STATE TO CHECK IS AUDIO PLAYING
+  const [isAudioPLaying, setIsAudioPlaying] = useState(false);
+  const [isIndicatorActive, setIsIndicatorActive] = useState(false);
+
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isNavVisible, setIsNavVisible] = useState(true);
+
   const navContainerRef = useRef(null);
+  const audioElementRef = useRef(null);
+
+  // Y POSITION ON USERS SCROLL
+  const { y: currentScrollY } = useWindowScroll();
+
+  const toggleAudioIndicator = () => {
+    setIsAudioPlaying((prev) => !prev);
+    setIsIndicatorActive((prev) => !prev);
+  };
+
+  // SCROLL Y-AXIS
+  useEffect(() => {
+    if (currentScrollY === 0) {
+      setIsNavVisible(true);
+      navContainerRef.current.classList.remove("floating-nav");
+    } else if (currentScrollY > lastScrollY) {
+      setIsNavVisible(false);
+      navContainerRef.current.classList.add("floating-nav");
+    } else if (currentScrollY < lastScrollY) {
+      setIsNavVisible(true);
+      navContainerRef.current.classList.add("floating-nav");
+    }
+    setLastScrollY(currentScrollY);
+  }, [currentScrollY]);
+
+  // NAV SCROLL ANIMATION
+  useEffect(() => {
+    gsap.to(navContainerRef.current, {
+      y: isNavVisible ? 0 : -100,
+      opacity: isNavVisible ? 1 : 0,
+      duration: 0.2,
+    });
+  }, [isNavVisible]);
+
+  // AUDIO
+  useEffect(() => {
+    if (isAudioPLaying) {
+      audioElementRef.current.play();
+    } else {
+      audioElementRef.current.pause();
+    }
+  }, [isAudioPLaying]);
+
   return (
     <div
       ref={navContainerRef}
@@ -26,6 +81,41 @@ const Navbar = () => {
           </div>
 
           {/* RIGHT SIDE NAVBAR */}
+          <div className="flex h-full items-center">
+            <div className="hidden md:block">
+              {navItems.map((item) => (
+                <a
+                  href={`#${item.toLocaleLowerCase()}`}
+                  key={item}
+                  className="nav-hover-btn"
+                >
+                  {item}
+                </a>
+              ))}
+            </div>
+            {/* MUSIC PLAY BUTTON */}
+            <button
+              className="ml-10 flex items-center space-x-0.5"
+              onClick={toggleAudioIndicator}
+            >
+              <audio
+                src="/audio/loop.mp3"
+                ref={audioElementRef}
+                className="hidden"
+                loop
+              />
+              {/* INDICATOR ACT AS A PLAY BUTTON */}
+              {[1, 2, 3, 4].map((bar) => (
+                <div
+                  key={bar}
+                  className={`indicator-line ${
+                    isIndicatorActive ? "active" : ""
+                  }`}
+                  style={{ animationDelay: `${bar * 0.1}s` }}
+                />
+              ))}
+            </button>
+          </div>
         </nav>
       </header>
     </div>
